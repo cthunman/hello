@@ -1,0 +1,23 @@
+div {
+	display: block;
+}
+
+svg {
+	// background: red;
+    border: 1px solid;
+}
+
+.clrfix {
+    zoom: 1;
+}
+
+.clrfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    width: 0;
+    line-height: 0;
+    font-size: 0;
+    clear: both;
+    visibility: hidden;
+}
