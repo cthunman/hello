@@ -5,4 +5,4 @@ run:
 
 > python -m SimpleHTTPServer 8888
 
-and visit localhost:8888/ticktest.html
+and visit localhost:8888/tickdata.html
