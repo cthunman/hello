@@ -13,37 +13,31 @@
         <p id="test"></p>
     </body>
     <script>
-        var margin = {top: 20, right: 20, bottom: 30, left: 50},
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
-        // var height = 500;
-        // var width = 1000;
-        var x = d3.time.scale().range([0, width]);
-        var y = d3.scale.linear().range([height, 0]);
-
-        // var xAxis = d3.svg.axis().scale(x).tickSize(-height).tickSubdivide(true);
-        var xAxis = d3.svg.axis().scale(x).orient("bottom");
-        // var yAxis = d3.svg.axis().scale(y).ticks(4).orient("right");
-        var yAxis = d3.svg.axis().scale(y).orient("left");
-
-        var data;
-
-        var svg = d3.select("body").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-          .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+            
         d3.json("/ordereddata.json", function(error, json) {
+            
             if (error) return console.warn(error);
-            // data = json;
             $("#test").html(json.ticker);
-            plotData(json);
             data = json;
-            // ticks = json["ticks"];
-        });
 
-        function plotData(data) {
+            var margin = {top: 20, right: 20, bottom: 30, left: 50},
+                width = 960 - margin.left - margin.right,
+                height = 500 - margin.top - margin.bottom;
+
+            var x = d3.time.scale().range([0, width]);
+            var y = d3.scale.linear().range([height, 0]);
+
+            var xAxis = d3.svg.axis().scale(x).orient("bottom");
+            var yAxis = d3.svg.axis().scale(y).orient("left");
+
+            // var data;
+
+            var svg = d3.select("body").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
             var svg = d3.select("svg");
             var parse = d3.time.format("%H:%M:%S").parse;
     
@@ -52,25 +46,28 @@
             //     .x(function(d) { return parse(d["date"]); })
             //     .y0(height)
             //     .y1(function(d) { return y(d["price"]); });
+            
+            data["ticks"].forEach(function(d) {
+                d["date"] = parse(d["date"]);
+            });
     
+            var values = data["ticks"];
+            // x.domain([values[0]["date"], values[values.length - 1]["date"]]);
+            x.domain(d3.extent(data.ticks, function(d) { return d.date }));
+            // y.domain([0, d3.max(values, function(d) { return d["price"]; })]).nice();
+            y.domain(d3.extent(data.ticks, function(d) { return d.price }));
+
             var line = d3.svg.line()
                 .x(function(d) { return parse(d["date"]); })
                 .y(function(d) { return d["price"]; })
                 .interpolate("basis");
-    
-            var values = data["ticks"];
-            x.domain([parse(values[0]["date"]), parse(values[values.length - 1]["date"])]);
-            y.domain([0, d3.max(values, function(d) { return d["price"]; })]).nice();
-
-            // values.append("path")
-            //     .attr("d", line);
             
-            // // Add the clip     path.
-            svg.append("clipPath")
-                .attr("id", "clip")
-              .append("rect")
-                .attr("width", width)
-                .attr("height", height);
+            // // Add the clip path.
+            // svg.append("clipPath")
+            //     .attr("id", "clip")
+            //   .append("rect")
+            //     .attr("width", width)
+            //     .attr("height", height);
     
             // // Add the area path.
             // svg.append("path")
@@ -87,22 +84,22 @@
             // Add the y-axis.
             svg.append("g")
                 .attr("class", "y axis")
-                .attr("transform", "translate(" + width + ",0)")
+                .attr("transform", "translate(0," + width + ")")
                 .call(yAxis);
     
             // Add the line path.
-            svg.append("path")
-                .attr("class", "line")
-                .attr("clip-path", "url(#clip)")
-                .attr("d", line(values));
+            // svg.append("path")
+            //     .attr("class", "line")
+            //     .attr("clip-path", "url(#clip)")
+            //     .attr("d", line(values));
     
             // Add a small label for the symbol name.
-            svg.append("text")
-                .attr("x", width - 6)
-                .attr("y", height - 6)
-                .style("text-anchor", "end")
-                .text(values[0].symbol);
-        }
+            // svg.append("text")
+            //     .attr("x", width - 6)
+            //     .attr("y", height - 6)
+            //     .style("text-anchor", "end")
+            //     .text(data.ticker);
+        });
 
     </script>
 </html>
