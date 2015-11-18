@@ -1,5 +1,12 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<head>
+    <link rel="stylesheet/less" type="text/css" href="/styles/styles.less" />
+    <script type="text/javascript">less = { env: 'development' };</script>
+    <script src="/js/less.js" type="text/javascript"></script>
+    <script src="/js/jquery-1.10.0.js" type="text/javascript"></script>
+    <script src="/js/d3.min.js" type="text/javascript"></script>
+</head>
 <style>
 
 body {
@@ -29,12 +36,13 @@ path.area {
 
 </style>
 <body>
-<script src="//d3js.org/d3.v3.min.js"></script>
+<h1 class="selector">amzn.json</h1>
+<h1 class="selector">goog.json</h1>
 <script>
 
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 1400 - margin.left - margin.right,
-    height = 700 - margin.top - margin.bottom;
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
 
 var parseDate = d3.time.format("%H:%M:%S").parse;
 
@@ -69,46 +77,85 @@ var svg = d3.select("body").append("svg")
     .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.json("/ordereddata.json", function(error, json) {
-    if (error) throw error;
+function graphData(fileName) {
+    d3.json(fileName, function(error, json) {
+        if (error) throw error;
 
-    data = json.ticks;
+        data = json.ticks;
 
-    data.forEach(function(d) {
-    d.date = parseDate(d.date);
-    d.price = +d.price;
+        data.forEach(function(d) {
+            d.date = parseDate(d.date);
+            d.price = +d.price;
+        });
+
+        x.domain(d3.extent(data, function(d) { return d.date; }));
+        y.domain(d3.extent(data, function(d) { return d.price; }));
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+        .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Price ($)");
+
+        svg.append("path")
+            .datum(data)
+            .attr("class", "line")
+            .attr("d", line);
+
+        svg.append("path")
+            .attr("class", "area")
+            .attr("clip-path", "url(#clip)")
+            .attr("d", area(data));
+
+        svg.append("path")
     });
+}
 
-    x.domain(d3.extent(data, function(d) { return d.date; }));
-    y.domain(d3.extent(data, function(d) { return d.price; }));
+function updateData(fileName) {
+    d3.json(fileName, function(error, json) {
+        if (error) throw error;
 
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis);
+        data = json.ticks;
 
-    svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis)
-    .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Price ($)");
+        data.forEach(function(d) {
+            d.date = parseDate(d.date);
+            d.price = +d.price;
+        });
 
-    svg.append("path")
-        .datum(data)
-        .attr("class", "line")
-        .attr("d", line);
+        x.domain(d3.extent(data, function(d) { return d.date; }));
+        y.domain(d3.extent(data, function(d) { return d.price; }));
 
-    svg.append("path")
-        .attr("class", "area")
-        .attr("clip-path", "url(#clip)")
-        .attr("d", area(data));
+        var svg = d3.select("body").transition();
 
-    svg.append("path")
+        // Make the changes
+        svg.select(".line")   // change the line
+            .duration(1000)
+            .attr("d", line(data));
+        svg.select(".area")   // change the line
+            .duration(1000)
+            .attr("d", area(data));
+        svg.select(".x.axis") // change the x axis
+            .duration(1000)
+            .call(xAxis);
+        svg.select(".y.axis") // change the y axis
+            .duration(1000)
+            .call(yAxis);
+    });
+}
 
+graphData("amzn.json")
+
+$(".selector").on("click", function() {
+    updateData($(this).text());
 });
 
 </script>
