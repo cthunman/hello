@@ -138,16 +138,16 @@ function updateData(fileName) {
 
         // Make the changes
         svg.select(".line")   // change the line
-            .duration(1000)
+            // .duration(1000)
             .attr("d", line(data));
         svg.select(".area")   // change the line
-            .duration(1000)
+            // .duration(1000)
             .attr("d", area(data));
         svg.select(".x.axis") // change the x axis
-            .duration(1000)
+            // .duration(1000)
             .call(xAxis);
         svg.select(".y.axis") // change the y axis
-            .duration(1000)
+            // .duration(1000)
             .call(yAxis);
     });
 }
